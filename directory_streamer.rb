@@ -26,22 +26,24 @@ module S3reamer
         obj = @bucket.object(filename[1..-1])
         io = S3reamer::S3WriteStream.new(obj)
 
-        open(filename) do |file|
-          queue = INotify::Notifier.new
-          queue.watch(filename, :modify, :close) do |e2|
-            b = file.read
-            io.write(b)
-            @log.debug "Read #{b.length} bytes"
+        Thread.new do
+          open(filename) do |file|
+            queue = INotify::Notifier.new
+            queue.watch(filename, :modify, :close) do |e2|
+              b = file.read
+              io.write(b)
+              @log.debug "Read #{b.length} bytes"
 
-            queue.stop if e2.flags.include?(:close)
+              queue.stop if e2.flags.include?(:close)
+            end
+
+            queue.run
+            @log.info "File closed. Completing S3 upload: #{filename}"
+            @ignored_files.add(filename)
           end
 
-          queue.run
+          io.close
         end
-
-        @log.info "File closed. Completing S3 upload: #{filename}"
-        io.close
-        @ignored_files.add(filename)
       end
     end
 
