@@ -45,9 +45,7 @@ module S3reamer
             end
 
             while !stopped
-              @log.info "waiting for event in IO.select"
               if IO.select([queue.to_io], [], [], 1)
-                @log.info "got event in IO.select"
                 queue.process
               else
                 stopped = true
