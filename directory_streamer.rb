@@ -39,8 +39,16 @@ module S3reamer
               queue.stop if e2.flags.include?(:close)
             end
 
-            queue.run
-            @log.info "File closed. Completing S3 upload: #{filename}"
+            begin
+              Timeout::timeout(30) {
+                queue.run
+                @log.info "File closed. Completing S3 upload: #{filename}"
+              }
+            rescue Timeout::Error
+              @log.warn "Timed out while waiting for file to close: #{filename}. Completing S3 upload"
+            ensure
+              queue.stop
+            end
           end
 
           io.close
