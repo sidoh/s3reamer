@@ -31,7 +31,7 @@ module S3reamer
           queue.watch(filename, :modify, :close) do |e2|
             b = file.read
             io.write(b)
-            log.debug "Read #{b.length} bytes"
+            @log.debug "Read #{b.length} bytes"
 
             queue.stop if e2.flags.include?(:close)
           end
