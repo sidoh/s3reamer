@@ -41,7 +41,7 @@ module S3reamer
             end
 
             begin
-              while true
+              while queue.to_io.open?
                 Timeout::timeout(30) {
                   queue.process
                 }
