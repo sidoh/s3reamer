@@ -2,6 +2,7 @@ require 'set'
 require 'logger'
 require 'rb-inotify'
 require 'aws-sdk'
+require 'thread/pool'
 
 require_relative 's3_write_stream'
 
@@ -14,6 +15,8 @@ module S3reamer
 
       @ignored_files = Set.new
       @dir_watch = INotify::Notifier.new
+      @pool = Thread.pool(4)
+
       @dir_watch.watch(@dir, :open, :recursive) do |e|
         filename = e.absolute_name
         next unless File.exists?(filename) and !File.directory?(filename)
@@ -22,10 +25,10 @@ module S3reamer
         @log.info "inotify open event for: #{filename}"
         @ignored_files.add(filename)
 
-        Thread.new do
+        @pool.process {
           obj = @bucket.object(filename[1..-1])
           io = S3reamer::S3WriteStream.new(obj)
-          
+
           open(filename) do |file|
             queue = INotify::Notifier.new
             queue.watch(filename, :modify, :close) do |e2|
@@ -42,12 +45,13 @@ module S3reamer
 
           io.close
           @ignored_files.delete(filename)
-        end
+        }
       end
     end
 
     def run
       @dir_watch.run
+      @pool.shutdown
     end
 
     def stop
