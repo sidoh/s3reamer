@@ -36,7 +36,7 @@ OptionParser.new do |opts|
 end
 
 credentials = Aws::Credentials.new(ENV['AWS_ACCESS_TOKEN_ID'], ENV['AWS_SECRET_ACCESS_KEY'])
-s3 = Aws::S3::Resource.new(region: options[:region], credentials: c)
+s3 = Aws::S3::Resource.new(region: options[:region], credentials: credentials)
 bucket = s3.bucket(options[:bucket_name])
 watcher = S3reamer::DirectoryStreamer.new(options[:directory], bucket)
 watcher.run
