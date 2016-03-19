@@ -45,9 +45,10 @@ module S3reamer
             end
 
             while !stopped
-              if IO.select([queue.to_io], [], [], 1)
+              if IO.select([queue.to_io], [], [], 30)
                 queue.process
               else
+                @log.warn "Waited for too long for file to be modified/closed."
                 stopped = true
               end
             end
