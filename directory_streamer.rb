@@ -44,15 +44,12 @@ module S3reamer
               end
             end
 
-            begin
-              while !stopped
-                @log.debug "Waiting for event..."
-                Timeout.timeout(1) { queue.process }
-                @log.debug "Left timeout block"
+            while !stopped
+              if IO.select([queue.to_io], [], [], [1])
+                queue.process
+              else
+                stopped = true
               end
-            rescue Timeout::TimeoutError
-              @log.warn "Timed out waiting for modify/close on: #{filename}"
-              queue.stop
             end
 
             @log.info "File closed. Completing S3 upload: #{filename}"
