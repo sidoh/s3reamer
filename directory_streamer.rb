@@ -40,6 +40,7 @@ module S3reamer
             end
 
             while IO.select([queue.to_io], [], [], [10])
+              @log.debug "Got event"
               queue.process
             end
 
