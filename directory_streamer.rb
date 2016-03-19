@@ -24,7 +24,7 @@ module S3reamer
 
         @log.info "inotify open event for: #{filename}"
         obj = @bucket.object(filename)
-        io = S3reamer::S3WriteStream(obj)
+        io = S3reamer::S3WriteStream.new(obj)
 
         open(filename) do |file|
           queue = INotify::Notifier.new
