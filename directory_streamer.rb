@@ -38,6 +38,8 @@ module S3reamer
 
           queue.run
         end
+
+        io.close
       end
     end
 
