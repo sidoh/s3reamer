@@ -13,6 +13,7 @@ module S3reamer
       @dir = dir
       @bucket = bucket
       @log = Logger.new(STDOUT)
+      @log.level = Logger::INFO
 
       @ignored_files = Set.new
       @dir_watch = INotify::Notifier.new
@@ -23,7 +24,7 @@ module S3reamer
         next unless File.exists?(filename) and !File.directory?(filename)
         next if @ignored_files.include?(filename)
 
-        @log.info "inotify open event for: #{filename}"
+        log.info "File opened: #{filename}"
         @ignored_files.add(filename)
 
         @pool.process {
@@ -36,7 +37,7 @@ module S3reamer
             queue.watch(filename, :modify, :close) do |e2|
               b = file.read
               io.write(b)
-              @log.debug "Read #{b.length} bytes"
+              log.debug "Read #{b.length} bytes"
 
               if e2.flags.include?(:close)
                 queue.close
@@ -48,12 +49,12 @@ module S3reamer
               if IO.select([queue.to_io], [], [], 30)
                 queue.process
               else
-                @log.warn "Waited for too long for file to be modified/closed."
+                log.warn "Waited for too long for file to be modified/closed."
                 stopped = true
               end
             end
 
-            @log.info "File closed. Completing S3 upload: #{filename}"
+            log.info "File closed. Completing S3 upload: #{filename}"
           end
 
           io.close
@@ -70,5 +71,10 @@ module S3reamer
     def stop
       @dir_watch.stop
     end
+
+    private
+      def log
+        @log
+      end
   end
 end
