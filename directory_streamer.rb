@@ -38,10 +38,7 @@ module S3reamer
               io.write(b)
               @log.debug "Read #{b.length} bytes"
 
-              if e2.flags.include?(:close)
-                queue.stop
-                stopped = true
-              end
+              queue.stop if e2.flags.include?(:close)
             end
 
             begin
@@ -50,6 +47,7 @@ module S3reamer
                   @log.debug "Waiting for event..."
                   queue.process
                 }
+                @log.debug "Left timeout block"
               end
             rescue Timeout::TimeoutError
               @log.warn "Timed out waiting for modify/close on: #{filename}"
