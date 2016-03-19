@@ -23,7 +23,7 @@ module S3reamer
         end
 
         @log.info "inotify open event for: #{filename}"
-        obj = @bucket.object(filename)
+        obj = @bucket.object(filename[1..-1])
         io = S3reamer::S3WriteStream.new(obj)
 
         open(filename) do |file|
