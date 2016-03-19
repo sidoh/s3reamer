@@ -40,6 +40,7 @@ module S3reamer
         end
 
         io.close
+        @ignored_files.add(filename)
       end
     end
 
