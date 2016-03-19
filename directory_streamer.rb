@@ -21,10 +21,11 @@ module S3reamer
 
         @log.info "inotify open event for: #{filename}"
         @ignored_files.add(filename)
-        obj = @bucket.object(filename[1..-1])
-        io = S3reamer::S3WriteStream.new(obj)
 
         Thread.new do
+          obj = @bucket.object(filename[1..-1])
+          io = S3reamer::S3WriteStream.new(obj)
+          
           open(filename) do |file|
             queue = INotify::Notifier.new
             queue.watch(filename, :modify, :close) do |e2|
@@ -38,10 +39,10 @@ module S3reamer
             queue.run
             @log.info "File closed. Completing S3 upload: #{filename}"
           end
-        end
 
-        io.close
-        @ignored_files.delete(filename)
+          io.close
+          @ignored_files.delete(filename)
+        end
       end
     end
 
