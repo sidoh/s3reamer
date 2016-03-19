@@ -39,6 +39,7 @@ module S3reamer
           queue.run
         end
 
+        @log.info "File closed. Completing S3 upload: #{filename}"
         io.close
         @ignored_files.add(filename)
       end
