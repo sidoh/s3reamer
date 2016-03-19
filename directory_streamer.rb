@@ -3,6 +3,7 @@ require 'logger'
 require 'rb-inotify'
 require 'aws-sdk'
 require 'thread/pool'
+require 'timeout'
 
 require_relative 's3_write_stream'
 
@@ -39,12 +40,17 @@ module S3reamer
               queue.stop if e2.flags.include?(:close)
             end
 
-            while IO.select([queue.to_io], [], [], [10])
-              @log.debug "Got event"
-              queue.process
+            begin
+              while true
+                Timeout::timeout(30) {
+                  queue.process
+                }
+              end
+            rescue Timeout::TimeoutError
+              @log.warn "Timed out waiting for modify/close on: #{filename}"
+              queue.stop
             end
 
-            queue.stop
             @log.info "File closed. Completing S3 upload: #{filename}"
           end
 
