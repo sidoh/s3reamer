@@ -41,7 +41,7 @@ module S3reamer
             end
 
             begin
-              while !stopped
+              while true
                 @log.debug "Waiting for event..."
                 queue.process
                 @log.debug "Left timeout block"
