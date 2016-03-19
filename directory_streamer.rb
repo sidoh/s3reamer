@@ -31,14 +31,13 @@ module S3reamer
           io = S3reamer::S3WriteStream.new(obj)
 
           open(filename) do |file|
-            stopped = false
             queue = INotify::Notifier.new
             queue.watch(filename, :modify, :close) do |e2|
               b = file.read
               io.write(b)
               @log.debug "Read #{b.length} bytes"
 
-              queue.stop if e2.flags.include?(:close)
+              queue.close if e2.flags.include?(:close)
             end
 
             begin
