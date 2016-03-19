@@ -47,6 +47,7 @@ module S3reamer
             begin
               while !stopped
                 Timeout::timeout(1) {
+                  @log.debug "Waiting for event..."
                   queue.process
                 }
               end
