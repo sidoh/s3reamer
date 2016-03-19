@@ -17,7 +17,7 @@ module S3reamer
       @dir_watch.watch(@dir, :open, :recursive) do |e|
         filename = e.absolute_name
         if @ignored_files.include?(filename)
-          log.debug "ignoring event for : #{filename}"
+          @log.debug "ignoring event for : #{filename}"
           @ignored_files.delete(filename)
           next
         end
