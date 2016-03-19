@@ -17,7 +17,7 @@ module S3reamer
       @dir_watch.watch(@dir, :open, :recursive) do |e|
         filename = e.absolute_name
         next unless File.exists?(filename) and !File.directory?(filename)
-        
+
         if @ignored_files.include?(filename)
           @log.debug "ignoring event for : #{filename}"
           @ignored_files.delete(filename)
@@ -28,24 +28,21 @@ module S3reamer
         obj = @bucket.object(filename[1..-1])
         io = S3reamer::S3WriteStream.new(obj)
 
-        Thread.new do
-          open(filename) do |file|
-            queue = INotify::Notifier.new
-            queue.watch(filename, :modify, :close) do |e2|
-              b = file.read
-              io.write(b)
-              @log.debug "Read #{b.length} bytes"
+        open(filename) do |file|
+          queue = INotify::Notifier.new
+          queue.watch(filename, :modify, :close) do |e2|
+            b = file.read
+            io.write(b)
+            @log.debug "Read #{b.length} bytes"
 
-              queue.stop if e2.flags.include?(:close)
-            end
-
-            queue.run
-            @log.info "File closed. Completing S3 upload: #{filename}"
-            @ignored_files.add(filename)
+            queue.stop if e2.flags.include?(:close)
           end
 
-          io.close
+          queue.run
+          @log.info "File closed. Completing S3 upload: #{filename}"
         end
+
+        io.close
       end
     end
 
