@@ -3,7 +3,7 @@
 require 'optparse'
 require 'aws-sdk'
 
-require_relative 'directory_streamer'
+require 's3reamer'
 
 banner = "Usage: s3reamer DIRECTORY BUCKET_NAME [options]"
 if ARGV.length < 2
