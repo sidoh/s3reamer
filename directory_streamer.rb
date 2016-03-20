@@ -3,7 +3,7 @@ require 'logger'
 require 'rb-inotify'
 require 'aws-sdk'
 require 'thread/pool'
-require 'timeout'
+require 'thread_safe'
 
 require_relative 's3_write_stream'
 
