@@ -38,5 +38,5 @@ end
 credentials = Aws::Credentials.new(ENV['AWS_ACCESS_TOKEN_ID'], ENV['AWS_SECRET_ACCESS_KEY'])
 s3 = Aws::S3::Resource.new(region: options[:region], credentials: credentials)
 bucket = s3.bucket(options[:bucket_name])
-watcher = S3reamer::DirectoryStreamer.new
+watcher = S3reamer::DirectoryStreamer.new(log_level: Logger::DEBUG)
 watcher.stream_directory(directory: options[:directory], bucket: bucket)
