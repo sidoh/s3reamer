@@ -53,6 +53,7 @@ module S3reamer
             stopped = false
             queue = INotify::Notifier.new
             queue.watch(filename, :modify, :close) do |e2|
+              log.debug "Got event #{e2.flags.inspect} on #{filename}"
               b = file.read
               io.write(b)
               log.debug "Read #{b.length} bytes"
