@@ -6,26 +6,9 @@ require 'aws-sdk'
 require 's3reamer'
 
 banner = "Usage: s3reamer DIRECTORY BUCKET_NAME [options]"
-if ARGV.length < 2
-  $stderr.puts banner
-  exit 1
-end
-
-dir = ARGV.shift
-if !File.exists?(dir)
-  $stderr.puts "Directory does not exist: #{dir}"
-  exit 1
-elsif !File.directory?(dir)
-  $stderr.puts "Not a directory: #{dir}"
-  exit 1
-end
-
-bucket_name = ARGV.shift
 
 options = {
   region: 'us-east-1',
-  bucket_name: bucket_name,
-  directory: dir,
   reader_timeout: 30,
   reader_sleep_interval: 1,
   pool_size: 4,
@@ -34,7 +17,7 @@ options = {
   credentials_profile: 'default',
   prefix: ''
 }
-OptionParser.new do |opts|
+opts = OptionParser.new do |opts|
   opts.banner = banner
 
   opts.on("-r", "--region [AWS_REGION]") do |v|
@@ -75,7 +58,28 @@ OptionParser.new do |opts|
     v = "#{v}/" unless v.end_with?("/")
     options[:prefix] = v
   end
-end.parse!
+end
+
+if ARGV.length < 2
+  $stderr.puts opts
+  exit 1
+end
+
+dir = ARGV.shift
+if !File.exists?(dir)
+  $stderr.puts "Directory does not exist: #{dir}"
+  exit 1
+elsif !File.directory?(dir)
+  $stderr.puts "Not a directory: #{dir}"
+  exit 1
+end
+
+bucket_name = ARGV.shift
+options = options.merge({
+    bucket_name: bucket_name,
+    directory: dir
+})
+opts.parse!
 
 credentials = Aws::SharedCredentials.new(path: options[:credentials_file], profile_name: options[:credentials_profile])
 s3 = Aws::S3::Resource.new(region: options[:region], credentials: credentials)

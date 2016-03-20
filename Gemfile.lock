@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    s3reamer (0.0.1)
+    s3reamer (0.0.2)
       aws-sdk (~> 2)
       concurrent-ruby (~> 1)
       rake
