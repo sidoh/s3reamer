@@ -3,7 +3,7 @@ require 'logger'
 require 'rb-inotify'
 require 'aws-sdk'
 require 'thread/pool'
-require 'thread_safe'
+require 'concurrent'
 
 require_relative 's3_write_stream'
 
@@ -43,12 +43,12 @@ module S3reamer
         pool.process {
           log.debug "Starting process for: #{filename}"
 
-          obj = promise { bucket.object(filename[1..-1]) }
-          io = promise { S3reamer::S3WriteStream.new(obj) }
+          obj = Concurrent::Future.execute { bucket.object(filename[1..-1]) }
+          io = Concurrent::Future.execute { S3reamer::S3WriteStream.new(obj) }
 
           open(filename) do |file|
             log.debug "Setting up watch for: #{filename}"
-            
+
             stopped = false
             queue = INotify::Notifier.new
             queue.watch(filename, :modify, :close) do |e2|
