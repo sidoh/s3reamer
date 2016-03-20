@@ -34,7 +34,7 @@ options = {
   credentials_profile: 'default'
 }
 OptionParser.new do |opts|
-  opts.banner =
+  opts.banner = banner
 
   opts.on("-r", "--region [AWS_REGION]") do |v|
     options[:region] = v
