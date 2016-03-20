@@ -1,6 +1,6 @@
 # s3reamer
 
-*(pronounced "ss-three-mer")*
+*(pronounced "ess-three-mer")*
 
 Automatically upload files to S3 as they're created
 
