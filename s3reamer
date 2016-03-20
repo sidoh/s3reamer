@@ -68,7 +68,7 @@ OptionParser.new do |opts|
       "AWS credentials profile. Defaults to \"default\".") do |v|
     options[:credentials_profile] = v
   end
-end
+end.parse!
 
 puts options.inspect
 
