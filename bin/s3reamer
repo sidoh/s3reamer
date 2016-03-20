@@ -63,7 +63,7 @@ opts = OptionParser.new do |opts|
   opts.on("-l", "--log-file [FILE]", String,
       "Where logs should be written to. Defaults to STDOUT.") do |v|
     f = File.new(v)
-    if !f.file?
+    if File.file?(v)
       $stderr.puts "Specified log file is not a file: #{v}"
       exit 1
     elsif !File.exists?((log_dir = f.basename))
