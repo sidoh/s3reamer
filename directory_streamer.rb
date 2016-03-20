@@ -22,7 +22,7 @@ module S3reamer
     def initialize(options = {})
       @options = DEFAULT_OPTIONS.merge(options)
       @log = Logger.new(STDOUT)
-      # @log.level = Logger::DEB@options[:log_level]
+      @log.level = @options[:log_level]
     end
 
     def stream_directory(directory:, bucket:)
@@ -35,6 +35,7 @@ module S3reamer
 
         log.debug "Events #{e.flags.inspect} received for: #{filename}"
 
+        # Don't process directories
         next unless File.exists?(filename) and !File.directory?(filename)
 
         # If this is an "open" event, we should only process it if we haven't
@@ -62,20 +63,32 @@ module S3reamer
           open(filename) do |file|
             stopped = false
             size = 0
-            start_time = Time.now
+            last_successful_read = Time.now
+
+            # Start with bytes_read != 0 to force at least one read of the file.
+            # This addresses the race condition caused by files being opened and
+            # closed quickly.
             bytes_read = -1
 
+            # Go until the file has closed, or until we've not seen any new
+            # bytes written to the file past some threshold (specified by
+            # options[:reader_timeout]).
             while (file_statuses[filename] == :open || bytes_read != 0) &&
-              (start_time + options[:reader_timeout]) > Time.now
+              (last_successful_read + options[:reader_timeout]) > Time.now
 
               b = file.read
               bytes_read = b.length
               io.write(b)
 
-              log.debug "Read #{bytes_read} bytes: #{filename}"
-              start_time = Time.now unless bytes_read.zero?
+              # If we read any bytes, reset the time at which we last saw new
+              # bytes in the file. This prevents the read timeout condition from
+              # triggering.
+              if bytes_read > 0
+                log.debug "Read #{bytes_read} bytes: #{filename}"
+                last_successful_read = Time.now
+              end
 
-              sleep options[:reader_sleep_interval]
+              sleep options[:reader_sleep_interval] unless file_statuses[filename] != :open
             end
 
             log.info "File closed. Completing S3 upload: #{filename}"
