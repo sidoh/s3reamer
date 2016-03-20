@@ -20,7 +20,7 @@ module S3reamer
     def initialize(options = {})
       @options = DEFAULT_OPTIONS.merge(options)
       @log = Logger.new(STDOUT)
-      @log.level = @options[:log_level]
+      # @log.level = Logger::DEB@options[:log_level]
     end
 
     def stream_directory(directory:, bucket:)
