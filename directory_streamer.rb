@@ -63,15 +63,18 @@ module S3reamer
             stopped = false
             size = 0
             start_time = Time.now
+            bytes_read = -1
 
-            while file_statuses[filename] == :open &&
+            while (file_statuses[filename] == :open || bytes_read != 0) &&
               (start_time + options[:reader_timeout]) > Time.now
 
               b = file.read
+              bytes_read = b.length
               io.write(b)
-              log.debug "Read #{b.length} bytes"
-              start_time = Time.now unless b.empty?
-              
+
+              log.debug "Read #{bytes_read} bytes"
+              start_time = Time.now unless bytes_read.zero?
+
               sleep options[:reader_sleep_interval]
             end
 
