@@ -55,8 +55,14 @@ module S3reamer
         pool.process {
           log.debug "Starting process for: #{filename}"
 
-          obj = bucket.object(filename[1..-1])
-          io = S3reamer::S3WriteStream.new(obj)
+          begin
+            obj = bucket.object(filename[1..-1])
+            io = S3reamer::S3WriteStream.new(obj)
+          rescue Error => e
+            log.error "Error initializing S3 streamer: #{e}"
+            log.error e.backtrace
+            raise e
+          end
 
           log.debug "Initialized S3 streamer"
 
@@ -100,7 +106,7 @@ module S3reamer
             log.error "Error completing S3 upload: #{e}"
             log.error e.backtrace
           end
-          
+
           file_statuses.delete(filename)
         }
       end
