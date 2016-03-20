@@ -50,7 +50,7 @@ OptionParser.new do |opts|
     options[:reader_sleep_interval] = v
   end
 
-  opts.on("-p", "--parallelism [N]", Integer,
+  opts.on("-n", "--parallelism [N]", Integer,
       "Maximum number of concurrent files being processed (defaults to 4)") do |v|
     options[:pool_size] = v
   end
