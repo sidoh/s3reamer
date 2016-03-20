@@ -44,8 +44,10 @@ module S3reamer
         pool.process {
           log.debug "Starting process for: #{filename}"
 
-          obj = Concurrent::Future.execute { bucket.object(filename[1..-1]) }
+          obj = bucket.object(filename[1..-1])
           io = Concurrent::Future.execute { S3reamer::S3WriteStream.new(obj) }
+
+          log.debug "Initialized bucket"
 
           open(filename) do |file|
             log.debug "Setting up watch for: #{filename}"
