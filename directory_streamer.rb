@@ -56,7 +56,11 @@ module S3reamer
           log.debug "Starting process for: #{filename}"
 
           begin
-            obj = bucket.object(filename[1..-1])
+            prefix = Pathname.new(filename)
+            prefix = prefix.relative_path_from(Pathname.new(directory))
+            prefix = "#{options[:prefix]}#{prefix}"
+
+            obj = bucket.object(prefix)
             io = S3reamer::S3WriteStream.new(obj)
           rescue Exception => e
             log.error "Error initializing S3 streamer: #{e}\n#{e.backtrace.join("\n")}"
