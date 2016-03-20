@@ -71,7 +71,7 @@ OptionParser.new do |opts|
     options[:credentials_profile] = v
   end
 
-  opts.on("-x", "--rel-path [PATH]", String,
+  opts.on("-x", "--rel-path [RELATIVE_PATH]", String,
       "Remote relative path. Effectively trims PATH from absolute path of uploaded " +
       "files. Defaults to same value as DIRECTORY. Must be equal to or a parent of " +
       "DIRECTORY. Set to \"/\" to preserve full path structure") do |v|
@@ -86,8 +86,8 @@ end.parse!
 
 if options[:directory][options[:rel_path]].nil?
   $stderr.puts "ERROR: Provided --rel-path is not equal to or a parent of DIRECTORY."
-  $stderr.puts "--rel-path: #{options[:rel_path]}"
-  $stderr.puts "DIRECTORY: #{options[:directory]}"
+  $stderr.puts "RELATIVE_PATH : #{options[:rel_path]}"
+  $stderr.puts "DIRECTORY     : #{options[:directory]}"
   exit 1
 end
 
