@@ -24,7 +24,7 @@ module S3reamer
     end
 
     def stream_directory(directory:, bucket:)
-      open_files = ThreadSafe::Cache.new
+      open_files = ThreadSafe::Hash.new
       dir_watch = INotify::Notifier.new
       pool = Thread.pool(options[:pool_size])
 
