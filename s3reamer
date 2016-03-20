@@ -31,7 +31,9 @@ options = {
   pool_size: 4,
   log_level: Logger::INFO,
   credentials_file: ENV['HOME'] + '/.aws/credentials',
-  credentials_profile: 'default'
+  credentials_profile: 'default',
+  prefix: '',
+  rel_path: dir
 }
 OptionParser.new do |opts|
   opts.banner = banner
@@ -68,7 +70,26 @@ OptionParser.new do |opts|
       "AWS credentials profile. Defaults to \"default\".") do |v|
     options[:credentials_profile] = v
   end
+
+  opts.on("-x", "--rel-path [PATH]", String,
+      "Remote relative path. Effectively trims PATH from absolute path of uploaded " +
+      "files. Defaults to same value as DIRECTORY. Must be equal to or a parent of " +
+      "DIRECTORY. Set to \"/\" to preserve full path structure") do |v|
+    options[:rel_path] = v
+  end
+
+  opts.on("--s3-prefix [PREFIX]", String,
+      "Prefix to append to all uploaded files. Defaults to empty string.") do |v|
+    options[:prefix] = v
+  end
 end.parse!
+
+if options[:directory][options[:rel_path]].nil?
+  $stderr.puts "ERROR: Provided --rel-path is not equal to or a parent of DIRECTORY."
+  $stderr.puts "--rel-path: #{options[:rel_path]}"
+  $stderr.puts "DIRECTORY: #{options[:directory]}"
+  exit 1
+end
 
 credentials = Aws::SharedCredentials.new(path: options[:credentials_file], profile_name: options[:credentials_profile])
 s3 = Aws::S3::Resource.new(region: options[:region], credentials: credentials)
