@@ -4,6 +4,7 @@ require 'rb-inotify'
 require 'aws-sdk'
 require 'thread/pool'
 require 'concurrent'
+require 'thread_safe'
 
 require_relative 's3_write_stream'
 
