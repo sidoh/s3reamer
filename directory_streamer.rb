@@ -94,7 +94,13 @@ module S3reamer
             log.info "File closed. Completing S3 upload: #{filename}"
           end
 
-          io.close
+          begin
+            io.close
+          rescue Error => e
+            log.error "Error completing S3 upload: #{e}"
+            log.error e.backtrace
+          end
+          
           file_statuses.delete(filename)
         }
       end
