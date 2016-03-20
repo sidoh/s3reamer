@@ -70,8 +70,6 @@ OptionParser.new do |opts|
   end
 end.parse!
 
-puts options.inspect
-
 credentials = Aws::SharedCredentials.new(path: options[:credentials_file], profile_name: options[:credentials_profile])
 s3 = Aws::S3::Resource.new(region: options[:region], credentials: credentials)
 bucket = s3.bucket(options[:bucket_name])

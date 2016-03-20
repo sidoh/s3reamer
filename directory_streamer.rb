@@ -23,7 +23,6 @@ module S3reamer
       @options = DEFAULT_OPTIONS.merge(options)
       @log = Logger.new(STDOUT)
       @log.level = options[:log_level]
-      log.info @options.inspect
     end
 
     def stream_directory(directory:, bucket:)
