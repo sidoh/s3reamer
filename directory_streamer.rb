@@ -9,27 +9,40 @@ require_relative 's3_write_stream'
 
 module S3reamer
   class DirectoryStreamer
-    def initialize(dir, bucket)
-      @dir = dir
-      @bucket = bucket
+    DEFAULT_OPTIONS = {
+      pool_size: 4,
+      close_timeout: 30,
+      log_level: Logger::INFO
+    }
+
+    attr_reader :options
+
+    def initialize(options = {})
+      @options = DEFAULT_OPTIONS.merge(options)
       @log = Logger.new(STDOUT)
-      @log.level = Logger::INFO
+      @log.level = @options[:log_level]
+    end
 
-      @ignored_files = Set.new
-      @dir_watch = INotify::Notifier.new
-      @pool = Thread.pool(4)
+    def stream_directory(directory:, bucket:)
+      open_files = ThreadSafe::Cache.new
+      dir_watch = INotify::Notifier.new
+      pool = Thread.pool(options[:pool_size])
 
-      @dir_watch.watch(@dir, :open, :recursive) do |e|
+      dir_watch.watch(directory, :open, :recursive) do |e|
         filename = e.absolute_name
+
         next unless File.exists?(filename) and !File.directory?(filename)
-        next if @ignored_files.include?(filename)
+
+        # If this is an "open" event, we should only process it if we haven't
+        # already started on this file.
+        next if e.flags.include?(:open) and open_files.include?(filename)
 
         log.info "File opened: #{filename}"
-        @ignored_files.add(filename)
+        open_files[filename] = true
 
-        @pool.process {
-          obj = @bucket.object(filename[1..-1])
-          io = S3reamer::S3WriteStream.new(obj)
+        pool.process {
+          obj = promise { bucket.object(filename[1..-1]) }
+          io = promise { S3reamer::S3WriteStream.new(obj) }
 
           open(filename) do |file|
             stopped = false
@@ -46,7 +59,7 @@ module S3reamer
             end
 
             while !stopped
-              if IO.select([queue.to_io], [], [], 30)
+              if IO.select([queue.to_io], [], [], options[:close_timeout])
                 queue.process
               else
                 log.warn "Waited for too long for file to be modified/closed."
@@ -58,18 +71,12 @@ module S3reamer
           end
 
           io.close
-          @ignored_files.delete(filename)
+          open_files.delete(filename)
         }
       end
-    end
 
-    def run
-      @dir_watch.run
-      @pool.shutdown
-    end
-
-    def stop
-      @dir_watch.stop
+      dir_watch.run
+      pool.shutdown
     end
 
     private
