@@ -68,6 +68,8 @@ module S3reamer
               b = file.read
               io.write(b)
               log.debug "Read #{b.length} bytes"
+
+              sleep options[:reader_sleep_interval]
             end
 
             log.info "File closed. Completing S3 upload: #{filename}"
