@@ -70,7 +70,8 @@ module S3reamer
               b = file.read
               io.write(b)
               log.debug "Read #{b.length} bytes"
-
+              start_time = Time.now unless b.empty?
+              
               sleep options[:reader_sleep_interval]
             end
 
