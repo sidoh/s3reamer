@@ -59,6 +59,7 @@ module S3reamer
             end
 
             while !stopped
+              log.debug "Waiting for event on: #{filename}"
               if IO.select([queue.to_io], [], [], options[:close_timeout])
                 queue.process
               else
