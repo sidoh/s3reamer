@@ -14,14 +14,16 @@ module S3reamer
       pool_size: 4,
       log_level: Logger::INFO,
       reader_sleep_interval: 1,
-      reader_timeout: 10
+      reader_timeout: 10,
+      encryption_key: nil,
+      log_file: STDOUT
     }
 
     attr_reader :options
 
     def initialize(options = {})
       @options = DEFAULT_OPTIONS.merge(options)
-      @log = Logger.new(STDOUT)
+      @log = Logger.new(options[:log_file])
       @log.level = options[:log_level]
     end
 

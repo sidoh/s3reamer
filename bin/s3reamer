@@ -15,7 +15,8 @@ options = {
   log_level: Logger::INFO,
   credentials_file: ENV['HOME'] + '/.aws/credentials',
   credentials_profile: 'default',
-  prefix: ''
+  prefix: '',
+  log_file: STDOUT
 }
 opts = OptionParser.new do |opts|
   opts.banner = banner
@@ -57,6 +58,20 @@ opts = OptionParser.new do |opts|
       "Prefix to append to all uploaded files. Defaults to empty string.") do |v|
     v = "#{v}/" unless v.end_with?("/")
     options[:prefix] = v
+  end
+
+  opts.on("-l", "--log-file [FILE]", String,
+      "Where logs should be written to. Defaults to STDOUT.") do |v|
+    f = File.new(v)
+    if !f.file?
+      $stderr.puts "Specified log file is not a file: #{v}"
+      exit 1
+    elsif !File.exists?((log_dir = f.basename))
+      $stderr.puts "Log file's directory does not exist: #{log_dir}"
+      exit 1
+    end
+
+    options[:log_file] = File.open(v, File::WRONLY | File::APPEND)
   end
 end
 
