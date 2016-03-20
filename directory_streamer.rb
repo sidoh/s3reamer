@@ -59,8 +59,7 @@ module S3reamer
             obj = bucket.object(filename[1..-1])
             io = S3reamer::S3WriteStream.new(obj)
           rescue Exception => e
-            log.error "Error initializing S3 streamer: #{e}"
-            log.error e.backtrace.join("\n")
+            log.error "Error initializing S3 streamer: #{e}\n#{e.backtrace.join("\n")}"
             raise e
           end
 
@@ -103,8 +102,7 @@ module S3reamer
           begin
             io.close
           rescue Exception => e
-            log.error "Error completing S3 upload: #{e}"
-            log.error e.backtrace.join("\n")
+            log.error "Error completing S3 upload: #{e}:\n#{e.backtrace.join("\n")}"
           end
 
           file_statuses.delete(filename)
