@@ -45,7 +45,7 @@ module S3reamer
           log.debug "Starting process for: #{filename}"
 
           obj = bucket.object(filename[1..-1])
-          io = Concurrent::Future.execute { S3reamer::S3WriteStream.new(obj) }
+          io = S3reamer::S3WriteStream.new(obj)
 
           log.debug "Initialized bucket"
 
