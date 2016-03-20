@@ -6,7 +6,7 @@ require 'thread/pool'
 require 'concurrent'
 require 'thread_safe'
 
-require_relative 's3_write_stream'
+require 's3reamer/s3_write_stream'
 
 module S3reamer
   class DirectoryStreamer
