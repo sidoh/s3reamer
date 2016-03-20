@@ -33,6 +33,8 @@ module S3reamer
       dir_watch.watch(directory, :open, :close, :recursive) do |e|
         filename = e.absolute_name
 
+        log.debug "Events #{e.flags.inspect} received for: #{filename}"
+
         next unless File.exists?(filename) and !File.directory?(filename)
 
         # If this is an "open" event, we should only process it if we haven't
@@ -42,8 +44,6 @@ module S3reamer
         # If this is a "close" event, we should update the status to inform the
         # worker thread
         if e.flags.include?(:close) and file_statuses.include?(filename)
-          log.debug "Got a close event for the file: #{filename}"
-          
           file_statuses[filename] = :close
           next
         end
