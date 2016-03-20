@@ -104,7 +104,7 @@ module S3reamer
             io.close
           rescue Exception => e
             log.error "Error completing S3 upload: #{e}"
-            log.error e.backtrace.join("\n"")
+            log.error e.backtrace.join("\n")
           end
 
           file_statuses.delete(filename)
