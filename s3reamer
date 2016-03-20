@@ -29,7 +29,9 @@ options = {
   reader_timeout: 30,
   reader_sleep_interval: 1,
   pool_size: 4,
-  log_level: Logger::INFO
+  log_level: Logger::INFO,
+  credentials_file: ENV['HOME'] + '/.aws/credentials',
+  credentials_profile: 'default'
 }
 OptionParser.new do |opts|
   opts.banner =
@@ -56,9 +58,19 @@ OptionParser.new do |opts|
   opts.on("-v", "--verbose") do
     options[:log_level] = Logger::DEBUG
   end
+
+  opts.on("-c", "--aws-credientials [PATH]", String,
+      "Path to AWS credentials file. Defaults to ~/.aws/credentials") do |v|
+    options[:credentials_file] = v
+  end
+
+  opts.on("-p", "--aws-credentials-profile [PROFILE]", String,
+      "AWS credentials profile. Defaults to \"default\".") do |v|
+    options[:credentials_profile] = v
+  end
 end
 
-credentials = Aws::Credentials.new(ENV['AWS_ACCESS_TOKEN_ID'], ENV['AWS_SECRET_ACCESS_KEY'])
+credentials = Aws::SharedCredentials.new(path: options[:credentials_file], profile_name: options[:credentials_profile])
 s3 = Aws::S3::Resource.new(region: options[:region], credentials: credentials)
 bucket = s3.bucket(options[:bucket_name])
 watcher = S3reamer::DirectoryStreamer.new(options)
