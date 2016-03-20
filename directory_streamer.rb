@@ -62,8 +62,8 @@ module S3reamer
             size = 0
             start_time = Time.now
 
-            while file_statuses[filename] == :open
-              and (start_time + options[:reader_timeout]) > Time.now
+            while file_statuses[filename] == :open &&
+              (start_time + options[:reader_timeout]) > Time.now
 
               b = file.read
               io.write(b)
