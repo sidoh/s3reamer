@@ -41,10 +41,14 @@ module S3reamer
         open_files[filename] = true
 
         pool.process {
+          log.debug "Starting process for: #{filename}"
+
           obj = promise { bucket.object(filename[1..-1]) }
           io = promise { S3reamer::S3WriteStream.new(obj) }
 
           open(filename) do |file|
+            log.debug "Setting up watch for: #{filename}"
+            
             stopped = false
             queue = INotify::Notifier.new
             queue.watch(filename, :modify, :close) do |e2|
