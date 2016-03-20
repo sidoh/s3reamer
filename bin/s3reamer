@@ -62,16 +62,15 @@ opts = OptionParser.new do |opts|
 
   opts.on("-l", "--log-file [FILE]", String,
       "Where logs should be written to. Defaults to STDOUT.") do |v|
-    f = File.new(v)
-    if File.file?(v)
+    if File.exists?(v) && !File.file?(v)
       $stderr.puts "Specified log file is not a file: #{v}"
       exit 1
-    elsif !File.exists?((log_dir = f.basename))
+    elsif !File.exists?((log_dir = File.dirname(v))
       $stderr.puts "Log file's directory does not exist: #{log_dir}"
       exit 1
     end
 
-    options[:log_file] = File.open(v, File::WRONLY | File::APPEND)
+    options[:log_file] = File.open(v, 'a')
   end
 end
 

@@ -32,6 +32,8 @@ module S3reamer
       dir_watch = INotify::Notifier.new
       pool = Thread.pool(options[:pool_size])
 
+      log.info "Setting up watch on: #{directory}"
+
       dir_watch.watch(directory, :open, :close, :recursive) do |e|
         filename = e.absolute_name
 
