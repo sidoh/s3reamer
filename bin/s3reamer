@@ -16,10 +16,15 @@ options = {
   credentials_file: ENV['HOME'] + '/.aws/credentials',
   credentials_profile: 'default',
   prefix: '',
+  filters: [],
   log_file: STDOUT
 }
 opts = OptionParser.new do |opts|
   opts.banner = banner
+  
+  opts.on("--filter [FILE_GLOB]") do |v|
+    options[:filters].push(v)
+  end
 
   opts.on("-r", "--region [AWS_REGION]") do |v|
     options[:region] = v

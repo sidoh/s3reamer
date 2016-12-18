@@ -16,7 +16,8 @@ module S3reamer
       reader_sleep_interval: 1,
       reader_timeout: 10,
       encryption_key: nil,
-      log_file: STDOUT
+      log_file: STDOUT,
+      filters: []
     }
 
     attr_reader :options
@@ -45,6 +46,11 @@ module S3reamer
         # If this is an "open" event, we should only process it if we haven't
         # already started on this file.
         next if e.flags.include?(:open) and file_statuses.include?(filename)
+        
+        if options[:filters].any? && options[:filters].none? { |x| File.fnmatch(x, filename) }
+          log.debug "Skipping event for file not matching filters: #{filename}"
+          next
+        end
 
         # If this is a "close" event, we should update the status to inform the
         # worker thread
